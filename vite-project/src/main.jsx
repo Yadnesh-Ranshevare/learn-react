@@ -8,10 +8,11 @@ import { createRoot } from 'react-dom/client'
 //import Routes from './contexAPI/contextWiithRouter/routes'      //context API with router
 //import AdvanceContext from './contexAPI/advance/avanceContext'    //advance context
 //import TodoUsingContext from './contexAPI/todousingContext/TodoUsingContext'    //advance context (todo using context)
-import ReduxToolKit from './rdux/reduxToolKit'
+// import ReduxToolKit from './rdux/reduxToolKit'
+import ChartJs from './chartJS/chart'
 
 createRoot(document.getElementById('root')).render(
     <>
-    <ReduxToolKit/>
+    <ChartJs/>
     </> 
 )
