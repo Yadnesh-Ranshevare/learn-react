@@ -10,10 +10,11 @@ import { createRoot } from 'react-dom/client'
 //import TodoUsingContext from './contexAPI/todousingContext/TodoUsingContext'    //advance context (todo using context)
 // import ReduxToolKit from './rdux/reduxToolKit'
 // import ChartJs from './chartJS/chart'
-import JsPDFGenerator from './jsPDF/JsPDF'
+// import JsPDFGenerator from './jsPDF/JsPDF'
+import Zod from './Zod/zod'
 
 createRoot(document.getElementById('root')).render(
     <>
-    <JsPDFGenerator/>
+    <Zod/>
     </> 
 )
