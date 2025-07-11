@@ -362,6 +362,72 @@ export default function Zod() {
 1. `validUser.error?.issues`: will return the list of all the errors
 2. `validUser.error?.errors`: will return the list of all the errors
 
+
+
+[Go To Top](#content)
+
+---
+# Using Zod with react-hook-form 
+React Hook Form is a library that helps you manage forms in React easily. It works with React’s built-in hooks (like useState, useEffect) to handle form state, validation, and submission in a simple and efficient way.
+
+[Click here to learn about react-hook-form](../ReactHookFrom/readme.md)
+
+### Setup (Installation)
+```bash
+npm install react-hook-form
+npm install @hookform/resolvers
+```
+
+### how to connect zod with react-hook-form
+1. **Import zod and zodResolver**
+```jsx
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+```
+2. **define zod schema**
+```jsx
+const schema = z.object({
+  username: z.string().min(3),
+  age: z.number().min(18),
+});
+```
+
+3. use zodResolver to connect zod with react-form-hook
+```jsx
+const {register, handleSubmit,formState: { errors }} = useForm({resolver: zodResolver(schema)});
+```
+
+### Example:
+```jsx
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const schema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  age: z.number().min(18, "You must be at least 18"),
+});
+
+function MyForm() {
+  const {register, handleSubmit,formState: { errors }} = useForm({resolver: zodResolver(schema)});
+
+  const onSubmit = (data) => console.log("Valid Data:", data);
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register("username")} placeholder="Username" />
+      {errors.username && <p>{errors.username.message}</p>}
+
+      <input type="number" {...register("age", { valueAsNumber: true })} placeholder="Age" />
+      {errors.age && <p>{errors.age.message}</p>}
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+
 [Go To Top](#content)
 
 ---

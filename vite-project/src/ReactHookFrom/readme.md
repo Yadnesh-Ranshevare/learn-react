@@ -8,6 +8,7 @@
 7. [Handling Backend Error](#handling-backend-error)
 8. [fromState.isSubmitting](#fromstateissubmitting)
 9. [How to add default values?](#how-to-add-default-values)
+10. [Integrating Zod for validation](#integrating-zod-for-validation)
 # Introduction
 React Hook Form is a library that helps you manage forms in React easily. It works with React’s built-in hooks (like useState, useEffect) to handle form state, validation, and submission in a simple and efficient way.
 
