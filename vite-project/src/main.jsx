@@ -11,10 +11,11 @@ import { createRoot } from 'react-dom/client'
 // import ReduxToolKit from './rdux/reduxToolKit'
 // import ChartJs from './chartJS/chart'
 // import JsPDFGenerator from './jsPDF/JsPDF'
-import Zod from './Zod/zod'
+// import Zod from './Zod/zod'
+import Form from './ReactHookFrom/Form'
 
 createRoot(document.getElementById('root')).render(
     <>
-    <Zod/>
+    <Form/>
     </> 
 )
