@@ -95,8 +95,8 @@ it is Used for:
 ```jsx
 const QueryOutput = useQuery({
     queryKey: ['uniqueKey'],   
-    queryFn: async () => {     
-      // fetch request
+    queryFn: async () => {     // accept the function
+      // fetch request 
     },
 })
 ```
@@ -107,6 +107,8 @@ const QueryOutput = useQuery({
 - **`QueryOutput.isError`** → `true` if the request failed.  
 - **`QueryOutput.isSuccess`** → `true` if the request succeeded.  
 - **`QueryOutput.refetch`** → function to manually re-run the query.  
+
+**`queryKey`**: it is use to cache the data i.e, data is cache with respect to this key. If the same key come it return the cache data and if new key come it runs the `queryFn` and cache it with respect to this key
 
 ### Other properties you can pass with useQuery
 ```jsx
