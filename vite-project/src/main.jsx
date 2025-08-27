@@ -13,10 +13,11 @@ import { createRoot } from 'react-dom/client'
 // import JsPDFGenerator from './jsPDF/JsPDF'
 // import Zod from './Zod/zod'
 // import Form from './ReactHookFrom/Form'
-import SuspenseExample from './Suspense/Suspense'
+// import SuspenseExample from './Suspense/Suspense'
+import Home from './TanStackQuery/Home'
 
 createRoot(document.getElementById('root')).render(
     <>
-    <SuspenseExample/>
+    <Home/>
     </> 
 )
