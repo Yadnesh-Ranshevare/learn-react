@@ -12,10 +12,11 @@ import { createRoot } from 'react-dom/client'
 // import ChartJs from './chartJS/chart'
 // import JsPDFGenerator from './jsPDF/JsPDF'
 // import Zod from './Zod/zod'
-import Form from './ReactHookFrom/Form'
+// import Form from './ReactHookFrom/Form'
+import SuspenseExample from './Suspense/Suspense'
 
 createRoot(document.getElementById('root')).render(
     <>
-    <Form/>
+    <SuspenseExample/>
     </> 
 )
