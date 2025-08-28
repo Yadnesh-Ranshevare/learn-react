@@ -2,6 +2,8 @@
 1. [Introduction](#introduction)
 2. [Setup](#setup)
 3. [useQuery](#usequery)
+4. [useMutation](#usemutation)
+5. [invalidateQueries](#invalidatequeries)
 
 ---
 # Introduction
@@ -167,6 +169,228 @@ What happens Here
 3. Data gets displayed in a list.
 4. If something fails → shows `"Error: ..."`
 
+
+
+[Go To Top](#content)
+
+---
+
+# useMutation
+- [useQuery](#usequery) → used for fetching (GET requests, data retrieval).
+- `useMutation` → used for changing data (POST, PUT, PATCH, DELETE).
+
+**In simple words:**\
+useMutation helps you send data to the server and handle success/error/loading states easily.
+
+### Basic syntax
+```jsx
+const mutation = useMutation({
+    mutationFn:async()=>{},
+    onSuccess: () => console.log("success"),
+    onError: () => console.log("error")
+})
+```
+- `mutationFu` accept the async function that can perform your api call
+- `onSuccess` is a function that runs if `mutationFn` succeeds
+- `onError` is a function that runs if `mutationFn` fails
+```jsx
+const mutation = useMutation({
+    mutationFn:addPost,
+    onSuccess: (data) => console.log(data),
+    onerror:(error) => console.log(error)
+})
+```
+in `onSuccess` and `onError` you also have the access to data and error object return by `mutationFu` function
+```jsx
+mutation.mutate()
+```
+`mutation.mutate()` is use to call this `mutationFu`
+```jsx
+const mutation = useMutation({
+    mutationFn:async({data})=>{
+      console.log(data)
+    }
+})
+
+mutation.mutate({data:"new data"})
+```
+This is how you can pass the data with `mutationFu`
+
+
+### list of properties returned by `useMutation`
+
+- **Status booleans**
+    - `isIdle` → true before any mutation is fired
+    - `isPending` → true while the mutation is running (like isLoading in useQuery)
+    - `isSuccess` → true if the mutation finished successfully
+    - `isError` → true if the mutation failed
+- **Data & Error**
+    - `data` → the response returned by `mutationFn`
+    - `error` → the error object if it failed
+
+
+### Example code
+```jsx
+import { useMutation } from '@tanstack/react-query'
+import React from 'react'
+
+
+const data = [
+    { id: 1, name: "Leanne Graham" },
+    { id: 2, name: "Ervin Howell" },
+    { id: 3, name: "Clementine Bauch" }
+]
+
+export default function UseMutationExample() {
+    const mutation = useMutation({
+        mutationFn:addPost,
+        onSuccess: (data) => console.log(data),   
+        onerror:(error) => console.log(error)
+    })
+
+    if (mutation.isPending) return <p>Loading users...</p>
+    if (mutation.isError) return <p>Error: {mutation.error.message}</p>
+
+    return (
+        <div>
+            <h2>useMutation example</h2>
+            <ul>
+                {
+                    data.map(user => (
+                        <li key={user.id}>{user.name}</li>
+                    ))
+                }
+            </ul>
+            <button onClick={() => mutation.mutate({newData:"add data"})}>add</button>
+        </div>
+    )
+}
+
+async function addPost({newData}) {
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    data.push({ id: data.length + 1, name: newData })
+    return data
+}
+```
+
+[Go To Top](#content)
+
+---
+
+### invalidateQueries
+- React Query stores fetched data in a cache (keyed by `queryKey`).
+- After a mutation (POST/PUT/DELETE), your server data changes.
+- But your cache is still stale (old data).
+- `invalidateQueries` tells React Query:\
+“Hey, this query is outdated. Please refetch it from the server.”
+
+### Basic syntax
+You use it with the `queryClient` instance:
+```jsx
+import { useQueryClient } from '@tanstack/react-query'
+
+const queryClient = useQueryClient()
+
+queryClient.invalidateQueries({ queryKey: ['todos'] })
+```
+This will refetch all queries that have `['todos']` as their key.
+
+
+### Example
+Imagine you have:
+```jsx
+const { data, isLoading, isError, error } = useQuery({
+  queryKey: ["InvalidateQueriesExample"],
+  queryFn: fetchRequest,    // function to fetch the data
+})
+```
+And for adding:
+```jsx
+const mutation = useMutation({
+  mutationFn: addPost,
+  onSuccess: () => {
+    // refetch fresh data after successful mutation
+    queryClient.invalidateQueries({ queryKey: ["InvalidateQueriesExample"] })
+  },
+})
+```
+So now when you call:
+```jsx
+mutation.mutate({ newData: "add data" })
+```
+**React Query will:**
+1. Send POST /api/todos
+2. Mark `['InvalidateQueriesExample']` as stale
+3. Refetch `['InvalidateQueriesExample']` automatically
+4. Update your UI with fresh data
+
+
+### Complete code
+```jsx
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import React from 'react'
+
+// initial dummy data
+let data = [
+  { id: 1, name: "Leanne Graham" },
+  { id: 2, name: "Ervin Howell" },
+  { id: 3, name: "Clementine Bauch" }
+]
+
+export default function InvalidateQueriesExample() {
+  const queryClient = useQueryClient()
+
+  //  Fetch users
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["InvalidateQueriesExample"],
+    queryFn: fetchRequest,
+  })
+
+  //  Mutation for adding a user
+  const mutation = useMutation({
+    mutationFn: addPost,
+    onSuccess: () => {
+      // refetch fresh data after successful mutation
+      queryClient.invalidateQueries({ queryKey: ["InvalidateQueriesExample"] })
+    },
+  })
+
+  if (isLoading) return <p>Loading users...</p>
+  if (isError) return <p>Error: {error.message}</p>
+
+  if(mutation.isPending) return <p>adding...</p>
+  if(mutation.isError) return <p>Error: {mutation.error.message}</p>
+
+  return (
+    <div>
+      <h2>InvalidateQueries Example (with useMutation)</h2>
+      <ul>
+        {data.map(user => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+
+      <button onClick={() => mutation.mutate({ newData: "add data" })}>
+        add
+      </button>
+
+    </div>
+  )
+}
+
+// 🔹 Fake fetch function (returns fresh copy each time)
+const fetchRequest = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 1000)) // simulate delay
+  return [...data] // return a new array copy (important!)
+}
+
+// 🔹 Fake add function
+const addPost = async ({ newData }) => {
+  await new Promise((resolve) => setTimeout(resolve, 500)) // simulate delay
+  data = [...data, { id: data.length + 1, name: newData }] // immutably add
+  return data
+}
+```
 
 
 [Go To Top](#content)
