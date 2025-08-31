@@ -11,3 +11,4 @@
 7. [React Hook Form](./vite-project//src/ReactHookFrom/readme.md)
 8. [Tanstack Query](./vite-project/src/TanStackQuery/readme.md)
 9. [Zod](./vite-project/src/Zod/readme.md)
+10. [Side Effects](./vite-project/src/SideEffect/Readme.md)

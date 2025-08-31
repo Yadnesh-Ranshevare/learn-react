@@ -14,10 +14,11 @@ import { createRoot } from 'react-dom/client'
 // import Zod from './Zod/zod'
 // import Form from './ReactHookFrom/Form'
 // import SuspenseExample from './Suspense/Suspense'
-import Home from './TanStackQuery/Home'
+// import Home from './TanStackQuery/Home'
+import CheckSideEffect from './SideEffect/CheckSideEffect'
 
 createRoot(document.getElementById('root')).render(
     <>
-    <Home/>
+    <CheckSideEffect/>
     </> 
 )
