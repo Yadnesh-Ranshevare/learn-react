@@ -12,3 +12,4 @@
 8. [Tanstack Query](./vite-project/src/TanStackQuery/readme.md)
 9. [Zod](./vite-project/src/Zod/readme.md)
 10. [Side Effects](./vite-project/src/SideEffect/Readme.md)
+11. [Garbage Collector](./vite-project/src/Garbage%20Collector/Readme.md)
