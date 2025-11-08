@@ -15,10 +15,11 @@ import { createRoot } from 'react-dom/client'
 // import Form from './ReactHookFrom/Form'
 // import SuspenseExample from './Suspense/Suspense'
 // import Home from './TanStackQuery/Home'
-import CheckSideEffect from './SideEffect/CheckSideEffect'
+// import CheckSideEffect from './SideEffect/CheckSideEffect'
+import R3F from './ReactThreeFiber/R3F'
 
 createRoot(document.getElementById('root')).render(
     <>
-    <CheckSideEffect/>
+    <R3F/>
     </> 
 )
