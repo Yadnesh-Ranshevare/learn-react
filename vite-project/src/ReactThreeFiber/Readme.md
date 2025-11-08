@@ -2,8 +2,14 @@
 
 1. [Introduction](#introduction)
 2. [Installation And Set up](#installation-and-set-up)
-3. [light components in React Three Fiber (R3F)](#light-components-in-react-three-fiber-r3f)
-4. [mesh Shape/Material](#mesh-shapematerial)
+3. [Canvas and mesh Component](#canvas-and-mesh-component)
+4. [light components in React Three Fiber (R3F)](#light-components-in-react-three-fiber-r3f)
+5. [mesh Geometries/Material](#mesh-geometriesmaterial)
+6. [Repositioning mesh/3D Object](#repositioning-mesh3d-object)
+7. [useFrame()](#useframe)
+8. [camera](#camera)
+9. [@react-three/drei](#react-threedrei)
+10. [helpers](#helpers) 
 
 ---
 
@@ -285,9 +291,11 @@ function Light() {
 [Go To Top](#content)
 
 ---
-# mesh Shape/Material
+# mesh Geometries/Material
 
-### Mesh Shapes (Geometries)
+### Mesh Geometries 
+> Visit [Three js official docs](https://threejs.org/docs/#BoxGeometry) to learn more about this geometries
+
 | **Geometry Component**     | **Shape Description**      | **Key Props (via `args` or direct)**                           | **Use Case**                   |
 | -------------------------- | -------------------------- | -------------------------------------------------------------- | ------------------------------ |
 | `<boxGeometry />`          | Cube / rectangular box     | `args={[width, height, depth]}`                                | Cubes, boxes, dice             |
@@ -348,6 +356,466 @@ Reflective Metal Ball
   <meshPhysicalMaterial metalness={1} roughness={0.1} clearcoat={1} />
 </mesh>
 ```
+
+
+[Go To Top](#content)
+
+---
+# Repositioning mesh/3D Object
+In React Three Fiber (R3F), you reposition a mesh using its `position`, `rotation`, or `scale` props — just like in Three.js — but with a simpler, React-style syntax.
+
+### 1. Positioning a Mesh
+You can move (translate) your mesh in x, y, z direction using the `position` prop.
+
+Example:
+```jsx
+<mesh position={[2, 1, -3]}>
+  <boxGeometry args={[1, 1, 1]} />
+  <meshStandardMaterial color="orange" />
+</mesh>
+```
+| Axis | Effect                    |
+| ---- | ------------------------- |
+| `x`  | Left (-x) or Right (+x)   |
+| `y`  | Down (-y) or Up (+y)      |
+| `z`  | Forward (-z) or Back (+z) |
+
+> When you move the mesh’s position, it looks like the camera view also shifts.
+>
+> But in reality — the camera is not moving at all. Only the mesh moves in 3D space — and since the camera is fixed at [0, 0, 0] looking toward -Z, the perspective changes, making it look like your view moved.
+
+Think of it like this:\
+Imagine you’re standing still and watching an object in front of you:
+- If the object moves to the right,\
+it looks like your view shifted left — but you didn’t move.
+
+- If it moves toward you,\
+it appears bigger — but the change is from the object’s position, not yours.
+
+That’s exactly what’s happening in Positioning.
+
+### 2. Rotating a Mesh
+You can rotate the mesh using the `rotation` prop in radians (not degrees!).
+
+Example
+```jsx
+<mesh rotation={[Math.PI / 4, Math.PI / 2, 0]}>
+  <boxGeometry args={[1, 1, 1]} />
+  <meshStandardMaterial color="skyblue" />
+</mesh>
+```
+| Axis | Rotation Effect                   |
+| ---- | --------------------------------- |
+| `x`  | Tilt up/down                      |
+| `y`  | Spin left/right                   |
+| `z`  | Rotate clockwise/counterclockwise |
+
+> Tip: Math.PI / 2 = 90°, Math.PI = 180°.
+
+### 3. Scaling a Mesh
+You can resize the mesh using the `scale` prop.
+
+Example
+```jsx
+<mesh scale={[2, 1, 1]}>
+  <sphereGeometry args={[1, 32, 32]} />
+  <meshStandardMaterial color="lime" />
+</mesh>
+```
+| Axis | Effect               |
+| ---- | -------------------- |
+| `x`  | Stretch horizontally |
+| `y`  | Stretch vertically   |
+| `z`  | Stretch depth-wise   |
+
+
+[Go To Top](#content)
+
+---
+# useFrame()
+`useFrame` is a special hook provided by `@react-three/fiber` that lets you run code on every rendered frame — just like an animation loop in Three.js.
+
+### Syntax
+```jsx
+useFrame((state, delta) => {
+  // your code runs here every frame (≈ 60 times per second)
+});
+```
+| Parameter | Meaning                                                                   |
+| --------- | ------------------------------------------------------------------------- |
+| `state`   | Gives access to the renderer’s current state (camera, mouse, clock, etc.) |
+| `delta`   | the time difference (in seconds) between the current frame and the previous frame.          |
+
+
+### Example
+```jsx
+// R3F.jsx
+import React, { useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import "./R3F.css";
+
+function RotatingBox() {
+  const ref = useRef();
+
+  useFrame((state, delta) => {
+    ref.current.rotation.y += delta;    {/*add animation to reference mesh*/}
+    ref.current.rotation.x += delta + 0.01;
+  });
+
+  return (
+    <mesh ref={ref} position={[0, 0, 0]}>   {/*get the reference if the mesh that you want to animate*/}
+      <boxGeometry args={[2, 2, 2]} />
+      <meshStandardMaterial color="orange" />
+    </mesh>
+  );
+}
+
+export default function R3F() {
+  return (
+    <Canvas>
+      <directionalLight position={[0, 0, 5]} intensity={1} />
+      <ambientLight intensity={0.4} />
+      <RotatingBox />
+    </Canvas>
+  );
+}
+
+```
+This makes the box rotate continuously — like a smooth animation loop.
+
+> `useFrame()` only works inside the React component tree rendered by `<Canvas>`.
+
+[Go To Top](#content)
+
+---
+# Camera
+A camera in 3D graphics works just like a real camera in the physical world — it defines what part of the 3D world you can see and how you see it.
+
+Think of your 3D scene as a room filled with objects.
+The camera decides:
+- Where you’re standing in that room,
+- What direction you’re looking at,
+- How wide your field of view is.
+
+In React Three Fiber (Three.js) The camera converts your 3D world → into a 2D image on your screen.
+
+By default, React Three Fiber uses:
+```jsx
+<Canvas camera={{ position: [0, 0, 0], fov: 75 }} />
+```
+| Property              | Meaning                                             |
+| --------------------- | --------------------------------------------------- |
+| `position`            | Where the camera is located in 3D space `[x, y, z]` |
+| `fov` (Field of View) | How wide the camera sees (like zoom)                |
+| `near` and `far`      | The visible distance range (clipping planes)        |
+| `lookAt()`            | Which direction the camera is looking               |
+
+### Types of Cameras
+**1. Perspective Camera**
+
+> (Default in React Three Fiber & Three.js)
+    
+| Feature                | Description                                          |
+| ---------------------- | ---------------------------------------------------- |
+| 👁️ **View style**     | Real-world view — like your eyes or a real camera.   |
+| 📏 **Distance effect** | Objects farther away look smaller.                   |
+| 🧮 **Uses**            | Realistic 3D scenes, games, 3D models, environments. |
+| ⚙️ **Main properties** | `fov`, `aspect`, `near`, `far`, `position`.          |
+
+Behavior:
+- When the cube moves away (z increases), it appears smaller.
+- Feels natural, like human vision.
+
+**Example**
+```jsx
+<Canvas
+  camera={{
+    position: [0, 0, 5],
+    fov: 75,          // wider view angle
+    near: 0.1,
+    far: 1000
+  }}
+>
+  <mesh>
+    <boxGeometry />
+    <meshStandardMaterial color="orange" />
+  </mesh>
+</Canvas>
+```
+
+
+**2. Orthographic Camera**
+
+(Flat / 2D-style projection)
+| Feature                | Description                                                               |
+| ---------------------- | ------------------------------------------------------------------------- |
+| 📏 **View style**      | No perspective — all objects appear the same size regardless of distance. |
+| 📦 **Distance effect** | Objects far away do **not** shrink.                                       |
+| 🧮 **Uses**            | 2D games, UI overlays, architectural drawings, CAD-like visuals.          |
+| ⚙️ **Main properties** | `left`, `right`, `top`, `bottom`, `near`, `far`, `zoom`, `position`.      |
+
+Behavior:
+- Cube looks the same size no matter how far it is.
+- Perfect for top-down or flat UIs.
+
+**Example**
+```jsx
+<Canvas orthographic camera={{ zoom: 100, position: [0, 0, 10] }}>
+  <mesh>
+    <boxGeometry />
+    <meshStandardMaterial color="orange" />
+  </mesh>
+</Canvas>
+```
+
+
+### Perspective Camera vs Orthographic Camera
+| Property        | PerspectiveCamera    | OrthographicCamera            |
+| --------------- | -------------------- | ----------------------------- |
+| Projection type | Realistic (3D depth) | Flat (2D-style)               |
+| Distant objects | Appear smaller       | Stay same size                |
+| Common uses     | Games, 3D models     | 2D UI, CAD, maps              |
+| Has FOV         | ✅ Yes                | ❌ No                          |
+| Has Zoom        | ✅ Yes                | ✅ Yes                         |
+| Realistic feel  | ✅ High               | ❌ Low                         |
+| Performance     | Normal               | Slightly faster for 2D scenes |
+
+
+
+
+
+### PerspectiveCamera Camera Properties 
+| **Property**          | **Type / Example**                       | **Description**                                                        |
+| --------------------- | ---------------------------------------- | ---------------------------------------------------------------------- |
+| `position`            | `[x, y, z]` → `[0, 0, 5]`                | Where the camera is placed in 3D space                                 |
+| `rotation`            | `[x, y, z]`                              | Orientation of the camera (in radians)                                 |
+| `fov` (Field of View) | `75`                                     | Determines how “wide” or “zoomed in” the view is — smaller = zoomed in |
+| `aspect`              | `window.innerWidth / window.innerHeight` | Width/height ratio; usually auto-set by R3F                            |
+| `near`                | `0.1`                                    | Closest distance visible to the camera                                 |
+| `far`                 | `1000`                                   | Farthest distance visible to the camera                                |
+| `zoom`                | `1`                                      | Zoom level (higher zooms in closer)                                    |
+| `lookAt(x, y, z)`     | Function                                 | Points the camera at a specific 3D coordinate                          |
+| `up`                  | `[0, 1, 0]`                              | Defines the “up” direction for the camera                              |
+| `target`              | `[x, y, z]` (OrbitControls)              | The point around which the camera orbits                               |
+| `filmGauge`           | `35`                                     | Simulates physical camera film size (for FOV scaling)                  |
+| `focus`               | `10`                                     | Used in depth-of-field effects (for realistic blur)                    |
+
+### Example of PerspectiveCamera
+```jsx
+<Canvas
+  camera={{
+    position: [3, 2, 5],
+    fov: 60,
+    near: 0.1,
+    far: 100,
+    zoom: 1,
+  }}
+>
+  <mesh>
+    <boxGeometry />
+    <meshStandardMaterial color="orange" />
+  </mesh>
+</Canvas>
+```
+
+### Orthographic Camera Properties
+| **Property**         | **Type / Example**         | **Description**                                                      |
+| -------------------- | -------------------------- | -------------------------------------------------------------------- |
+| `left`               | `-5`                       | Sets how far the left edge of the camera’s view extends.             |
+| `right`              | `5`                        | Sets how far the right edge of the camera’s view extends.            |
+| `top`                | `5`                        | Sets how far the top edge of the camera’s view extends.              |
+| `bottom`             | `-5`                       | Sets how far the bottom edge of the camera’s view extends.           |
+| `near`               | `0.1`                      | Nearest distance the camera can render (anything closer is clipped). |
+| `far`                | `1000`                     | Farthest distance the camera can render.                             |
+| `zoom`               | `1`                        | Zooms in/out — higher value = zooms in.                              |
+| `position`           | `[x, y, z]` → `[0, 0, 10]` | Defines where the camera is placed.                                  |
+| `rotation`           | `[x, y, z]`                | Rotates the camera around each axis (in radians).                    |
+| `up`                 | `[0, 1, 0]`                | Defines the upward direction for the camera.                         |
+| `lookAt(x, y, z)`    | Function                   | Points the camera toward a target coordinate.                        |
+| `matrixWorldInverse` | Internal                   | Used internally to calculate transformations.                        |
+| `projectionMatrix`   | Internal                   | Defines how the 3D world is projected onto 2D.                       |
+
+### Example Orthographic
+```jsx
+<Canvas
+  orthographic
+  camera={{
+    left: -5,
+    right: 5,
+    top: 5,
+    bottom: -5,
+    near: 0.1,
+    far: 100,
+    zoom: 80,
+    position: [5, 5, 5],
+  }}
+>
+  <ambientLight intensity={0.5} />
+  <mesh>
+    <boxGeometry />
+    <meshStandardMaterial color="orange" />
+  </mesh>
+</Canvas>
+```
+
+[Go To Top](#content)
+
+---
+# @react-three/drei
+
+`drei` (German for “three”) is a helper library for @react-three/fiber.
+
+It provides ready-made, reusable components built on top of Three.js — so you don’t have to code everything from scratch.
+
+### Why use drei?
+Without `drei`, you’d have to manually set up:
+- Controls for camera movement
+- Loaders for models or textures
+- Environment lights, sky, and reflections
+- Helpers like grid, axes, orbit, etc.
+
+With `drei`, it’s often just one line of code.
+
+### Install
+```bash
+npm install @react-three/drei
+```
+
+### Popular Components from drei
+| **Component**                        | **Purpose / Description**                                  |
+| ------------------------------------ | ---------------------------------------------------------- |
+| `<OrbitControls />`                  | Lets you rotate, zoom, and pan the camera with your mouse. |
+| `<PerspectiveCamera />`              | Easy camera setup directly in JSX.                         |
+| `<OrthographicCamera />`             | 2D-like camera setup.                                      |
+| `<Environment />`                    | Adds realistic background lighting and reflections.        |
+| `<Sky />`                            | Adds a dynamic sky.                                        |
+| `<Plane />`, `<Box />`, `<Sphere />` | Prebuilt geometric shapes.                                 |
+| `<Text />`                           | Render 3D text easily.                                     |
+| `<Html />`                           | Render regular HTML inside the 3D scene.                   |
+| `<Stars />`                          | Adds starry background sky.                                |
+| `<useGLTF />`                        | Hook to load 3D `.glb/.gltf` models.                       |
+| `<useTexture />`                     | Hook to load and apply textures.                           |
+| `<Float />`                          | Makes an object smoothly float and rotate.                 |
+| `<ContactShadows />`                 | Adds soft shadows beneath objects.                         |
+
+### Example
+```jsx
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, Environment, Float } from "@react-three/drei";
+
+export default function DreiDemo() {
+  return (
+    <Canvas camera={{ position: [0, 0, 5] }}>
+      <ambientLight intensity={0.5} />
+      <OrbitControls />
+      <Environment preset="sunset" />
+      <Float>
+        <mesh>
+          <boxGeometry />
+          <meshStandardMaterial color="orange" />
+        </mesh>
+      </Float>
+    </Canvas>
+  );
+}
+```
+**Result:**\
+A floating orange cube, interactive camera, and realistic lighting —
+all with only a few lines of code.
+
+[Go To Top](#content)
+
+---
+
+# helpers
+in Three.js and React Three Fiber, “helpers” are special visual debugging tools that help you see and understand your 3D scene better.
+
+> Helpers are small visual guides that show invisible elements like lights, cameras, or axes in your 3D space.
+>
+> They don’t affect the final rendering — they just help you as the developer to visualize positions, directions, or ranges.
+
+
+### Example
+```jsx
+import { Canvas, useThree } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+
+export default function HelpersDemo() {
+  return (
+    <Canvas camera={{ position: [3, 3, 5], fov: 75 }}>
+      <axesHelper args={[5]} />
+      <gridHelper args={[10, 10]} />
+      <directionalLight position={[5, 5, 5]} intensity={1} />
+      <mesh position={[0, 1, 0]}>
+        <boxGeometry />
+        <meshStandardMaterial color="orange" />
+      </mesh>
+      <OrbitControls />
+    </Canvas>
+  );
+}
+```
+**Output:**\
+You’ll see a floor grid, XYZ axes, and your cube — helps you perfectly visualize space.
+
+### useHelper() Hook
+useHelper() is a React Hook provided by @react-three/drei that lets you easily attach Three.js “helpers” (visual guides) to any object — like lights, cameras, or axes — without manually adding or removing them from the scene
+
+**Basic Syntax**
+```js
+useHelper(ref, HelperClass, ...args)
+```
+| Parameter     | Description                                                                        |
+| ------------- | ---------------------------------------------------------------------------------- |
+| `ref`         | A React ref to the Three.js object (e.g., a light or camera).                      |
+| `HelperClass` | The helper class from `three`, like `DirectionalLightHelper`, `CameraHelper`, etc. |
+| `...args`     | Optional parameters passed to the helper (like size or color).                     |
+
+**Example — Light Helper**
+```jsx
+import { Canvas } from "@react-three/fiber";
+import { useRef } from "react";
+import { useHelper } from "@react-three/drei";
+import { DirectionalLightHelper } from "three";
+
+function Scene() {
+  const lightRef = useRef();
+  
+  // Attach a helper that shows the light direction
+  useHelper(lightRef, DirectionalLightHelper, 2, "hotpink");
+
+  return (
+    <>
+      <directionalLight ref={lightRef} position={[3, 3, 3]} intensity={1} />
+      <mesh>
+        <boxGeometry />
+        <meshStandardMaterial color="orange" />
+      </mesh>
+    </>
+  );
+}
+
+export default function App() {
+  return <Canvas><Scene /></Canvas>;
+}
+```
+When you run this:
+- A pink wireframe arrow appears showing your light’s direction.
+- It updates automatically if your light moves.
+- The helper is removed automatically when the component unmounts.
+
+### Common Helpers 
+| **Helper Name**          | **Purpose**                                                   | **How It Helps You**                                    | **Usage / Example**                                 |
+| ------------------------ | ------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------- |
+| `AxesHelper`             | Shows 3 colored axes — X (red), Y (green), Z (blue).          | Helps understand orientation and rotation in the scene. | `<axesHelper args={[5]} />`                                 |
+| `GridHelper`             | Draws a grid on the ground.                                   | Useful for aligning and positioning objects.            | `<gridHelper args={[10, 10]} />`                            |
+| `BoxHelper`              | Displays the bounding box of a mesh.                          | Lets you visualize object boundaries.                   | `useHelper(meshRef, BoxHelper)`                             |
+| `CameraHelper`           | Shows the camera frustum (visible area).                      | Helps you see what your camera captures.                | `useHelper(cameraRef, CameraHelper)`                        |
+| `DirectionalLightHelper` | Displays the direction and source of a directional light.     | Useful for debugging lighting direction.                | `useHelper(lightRef, DirectionalLightHelper, 1, "hotpink")` |
+| `PointLightHelper`       | Shows a small sphere representing the point light’s position. | Helps visualize point light placement.                  | `useHelper(lightRef, PointLightHelper, 1)`                  |
+| `SpotLightHelper`        | Visualizes the cone of a spotlight.                           | Helps adjust spotlight angle, position, and target.     | `useHelper(lightRef, SpotLightHelper)`                      |
+| `SkeletonHelper`         | Displays bones and joints of a rigged model.                  | Useful when animating 3D characters.                    | `useHelper(skinnedMeshRef, SkeletonHelper)`                 |
+
 
 
 [Go To Top](#content)
