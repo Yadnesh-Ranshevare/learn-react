@@ -158,14 +158,107 @@ export default function R3F() {
 # light components in React Three Fiber (R3F)
 | **Light Type**                                       | **Shape / Effect**                             | **Key Properties**                                                                       | **Casts Shadows** | **Common Use Case**                         |
 | ---------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------- |
-| **`<ambientLight>`**                                 | Fills scene evenly with soft light             | `color`, `intensity`                                                                     | ❌                 | Basic global light; removes full darkness   |
-| **`<directionalLight>`**                             | Light from one direction, like sunlight        | `color`, `intensity`, `position`, `castShadow`, `shadow-*`                               | ✅                 | Sunlight or moonlight                       |
-| **`<pointLight>`**                                   | Emits light in all directions from a point     | `color`, `intensity`, `position`, `distance`, `decay`                                    | ✅                 | Bulbs, candles, torches                     |
-| **`<spotLight>`**                                    | Cone-shaped beam of light                      | `color`, `intensity`, `position`, `angle`, `penumbra`, `distance`, `decay`, `castShadow` | ✅                 | Flashlights, stage lights                   |
-| **`<hemisphereLight>`**                              | Mixes sky and ground colors                    | `skyColor`, `groundColor`, `intensity`                                                   | ❌                 | Outdoor/natural lighting                    |
-| **`<rectAreaLight>`**                                | Light from a rectangular surface               | `color`, `intensity`, `width`, `height`, `position`, `lookAt`                            | ❌                 | Softbox, studio or indoor lights            |
+| [**`<ambientLight>`**](#1-ambientlight)                                 | Fills scene evenly with soft light             | `color`, `intensity`                                                                     | ❌                 | Basic global light; removes full darkness   |
+| [**`<directionalLight>`**](#2-directionallight)                             | Light from one direction, like sunlight        | `color`, `intensity`, `position`, `castShadow`, `shadow-*`                               | ✅                 | Sunlight or moonlight                       |
+| [**`<pointLight>`**](#3-pointlight)                                  | Emits light in all directions from a point     | `color`, `intensity`, `position`, `distance`, `decay`                                    | ✅                 | Bulbs, candles, torches                     |
+| [**`<spotLight>`**](#4-spotlight)                                    | Cone-shaped beam of light                      | `color`, `intensity`, `position`, `angle`, `penumbra`, `distance`, `decay`, `castShadow` | ✅                 | Flashlights, stage lights                   |
+| [**`<hemisphereLight>`**](#5-hemispherelight)                              | Mixes sky and ground colors                    | `skyColor`, `groundColor`, `intensity`                                                   | ❌                 | Outdoor/natural lighting                    |
+| [**`<rectAreaLight>`**](#6-rectarealight)                               | Light from a rectangular surface               | `color`, `intensity`, `width`, `height`, `position`, `lookAt`                            | ❌                 | Softbox, studio or indoor lights            |
 | **`<lightProbe>`**                                   | Samples ambient environment for indirect light | (no main props; usually paired with environment maps)                                    | ❌                 | Realistic reflections and indirect lighting |
-| **`<spotLightHelper>` / `<directionalLightHelper>`** | Debug visual for light direction               | `args` (size), `ref` (to light)                                                          | ❌                 | Visual debugging of light direction         |
+| [**`<spotLightHelper>` / `<directionalLightHelper>`**](#7-spotlighthelper--directionallighthelper) | Debug visual for light direction               | `args` (size), `ref` (to light)                                                          | ❌                 | Visual debugging of light direction         |
+
+### 1. AmbientLight
+Gives soft, even light to everything in the scene (no shadows).
+Good for background/base lighting.
+```jsx
+<ambientLight
+  color="white"       // light color
+  intensity={0.5}     // brightness (default = 1)
+ />
+```
+
+### 2. DirectionalLight
+Acts like sunlight — shines in one direction.
+Casts shadows and creates highlights on surfaces.
+```jsx
+<directionalLight
+  color="white"
+  intensity={1}
+  position={[5, 10, 5]}
+  castShadow={true}
+/>
+```
+You can also fine-tune shadows:
+```jsx
+<directionalLight
+  castShadow
+  shadow-mapSize-width={1024}
+  shadow-mapSize-height={1024}
+  shadow-camera-far={50}
+/>
+```
+
+### 3. PointLight
+Emits light from a single point in all directions (like a bulb).
+```jsx
+<pointLight
+  color="white"
+  intensity={1}
+  position={[10, 10, 10]}
+  distance={50}     // how far the light reaches
+  decay={2}         // how fast light fades (realistic = 2)
+/>
+```
+### 4. SpotLight
+Cone-shaped light (like a flashlight or stage spotlight)
+```jsx
+<spotLight
+  color="white"
+  intensity={2}
+  position={[5, 10, 5]}
+  angle={0.3}        // cone spread (in radians)
+  penumbra={0.5}     // edge softness
+  distance={50}
+  decay={2}
+  castShadow
+/>
+```
+### 5. HemisphereLight
+Simulates natural outdoor light — mixes sky and ground color.
+```jsx
+<hemisphereLight
+  skyColor="blue"
+  groundColor="brown"
+  intensity={0.6}
+/>
+```
+### 6. RectAreaLight
+Light shining from a rectangular plane (good for studio or softbox effects).
+```jsx
+<rectAreaLight
+  color="white"
+  intensity={5}
+  width={5}
+  height={3}
+  position={[0, 5, 5]}
+  lookAt={[0, 0, 0]}     // points the light toward target
+/>
+```
+
+### 7. SpotLightHelper / DirectionalLightHelper
+Used for debugging — shows where the light is pointing.
+```jsx
+import { useHelper } from "@react-three/drei"
+import { DirectionalLightHelper } from "three"
+import { useRef } from "react"
+
+function Light() {
+  const light = useRef()
+  useHelper(light, DirectionalLightHelper, 5)
+  return <directionalLight ref={light} position={[5, 10, 5]} />
+}
+```
+
 
 ### Example Scene with Multiple Lights
 
@@ -231,6 +324,30 @@ export default function R3F() {
 | `<meshNormalMaterial />`   | Colors based on surface normals                             | `wireframe`, `flatShading`                         | ❌                          | Debugging, funky visuals               |
 | `<shadowMaterial />`       | Transparent material for receiving shadows                  | `opacity`                                          | ✅ (for shadow catcher)     | Shadow-only ground planes              |
 
+
+### Example
+Simple Cube
+```jsx
+<mesh>
+  <boxGeometry args={[1, 1, 1]} />
+  <meshStandardMaterial color="orange" metalness={0.3} roughness={0.7} />
+</mesh>
+```
+Sphere with cartoon look
+
+```jsx
+<mesh>
+  <sphereGeometry args={[1, 32, 32]} />
+  <meshToonMaterial color="lime" />
+</mesh>
+```
+Reflective Metal Ball
+```jsx
+<mesh>
+  <sphereGeometry args={[1, 32, 32]} />
+  <meshPhysicalMaterial metalness={1} roughness={0.1} clearcoat={1} />
+</mesh>
+```
 
 
 [Go To Top](#content)
