@@ -17,9 +17,10 @@ import { createRoot } from 'react-dom/client'
 // import Home from './TanStackQuery/Home'
 // import CheckSideEffect from './SideEffect/CheckSideEffect'
 import R3F from './ReactThreeFiber/R3F'
+import ExtrnalModal from './ReactThreeFiber/ExtrnalModal'
 
 createRoot(document.getElementById('root')).render(
     <>
-    <R3F/>
+    <ExtrnalModal/>
     </> 
 )

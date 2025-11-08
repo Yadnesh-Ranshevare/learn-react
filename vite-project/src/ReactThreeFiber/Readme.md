@@ -10,6 +10,7 @@
 8. [camera](#camera)
 9. [@react-three/drei](#react-threedrei)
 10. [helpers](#helpers) 
+11. [Integrate 3D Models](#integrate-3d-models)
 
 ---
 
@@ -817,6 +818,108 @@ When you run this:
 | `SkeletonHelper`         | Displays bones and joints of a rigged model.                  | Useful when animating 3D characters.                    | `useHelper(skinnedMeshRef, SkeletonHelper)`                 |
 
 
+
+[Go To Top](#content)
+
+---
+# Integrate 3D Models
+
+### Step-by-step guide — overview
+1. Prepare/optimize model → convert to `.glb` (recommended).
+2. Put model in your app’s `public` folder.
+3. Load model with `useGLTF()` (drei).
+4. Render with `<primitive object={scene} />` or use children.
+5. Add lights, camera (Canvas), controls, and `Suspense` + `Loader`.
+6. Handle animations with `useAnimations` if model has them.
+8. Optimize runtime (draco, LOD, instances, compress textures).
+
+### 1. Prepare & optimize the model (recommended)
+
+Preferred format: `.glb` (binary glTF). Smaller, faster, contains materials & animations.
+
+### 2. Put the model file in your public folder
+For Vite, place files under public/ so you can request them by path:
+```cpp
+project/
+ ├─ public/
+ │   └─ models/
+ │       └─ monk.glb
+ └─ src/
+     └─ ...
+```
+Access path: `"/models/monk.glb"`.
+
+### 3. Load model with `useGLTF()` (drei).
+```js
+const { scene } = useGLTF("/models/monk.glb"); // path in public/
+```
+
+### 4. Render with `<primitive object={scene} />` or use children.
+
+```jsx
+import React from "react";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, useGLTF } from "@react-three/drei";
+
+function MonkModel() {
+    const { scene } = useGLTF("/models/monk.gltf");
+    return <primitive object={scene} scale={2} />;
+}
+
+export default function ExtrnalModal() {
+    return (
+        <Canvas camera={{ position: [3, 2, 5] }}>
+            <MonkModel />
+        </Canvas>
+    );
+}
+```
+
+### 5. Add lights, camera (Canvas), controls, and `Suspense` + `Loader`.
+```jsx
+import React, { Suspense } from "react";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, useGLTF } from "@react-three/drei";
+
+function MonkModel() {
+    const { scene } = useGLTF("/models/monk.gltf");
+    return <primitive object={scene} scale={2} />;
+}
+
+export default function ExtrnalModal() {
+    return (
+        <Canvas camera={{ position: [3, 2, 5] }}>
+            <ambientLight intensity={1} />
+            <directionalLight position={[5, 5, 5]} />
+            <Suspense fallback={null}>
+                <MonkModel />
+            </Suspense>
+            <OrbitControls />
+        </Canvas>
+    );
+}
+```
+### 6. Handling animated models
+If your `.glb` includes animations (skeletons):
+```jsx
+// AnimatedModel.jsx
+import React, { useRef, useEffect } from "react";
+import { useGLTF, useAnimations } from "@react-three/drei";
+
+export default function AnimatedModel() {
+  const group = useRef();
+  const { scene, animations } = useGLTF("/models/character.glb");
+  const { actions } = useAnimations(animations, group);
+
+  useEffect(() => {
+    if (actions?.Idle) actions.Idle.play();      // start "Idle" clip if exists
+    // or actions['Walk'].play();
+  }, [actions]);
+
+  return <primitive ref={group} object={scene} scale={1.2} />;
+}
+```
+`useAnimations` ties GLTF animation clips to the loaded model and provides `.play()`, `.stop()`, `.fadeIn()`, etc.
 
 [Go To Top](#content)
 
