@@ -16,11 +16,12 @@ import { createRoot } from 'react-dom/client'
 // import SuspenseExample from './Suspense/Suspense'
 // import Home from './TanStackQuery/Home'
 // import CheckSideEffect from './SideEffect/CheckSideEffect'
-import R3F from './ReactThreeFiber/R3F'
-import ExtrnalModal from './ReactThreeFiber/ExtrnalModal'
+// import R3F from './ReactThreeFiber/R3F'
+// import ExtrnalModal from './ReactThreeFiber/ExtrnalModal'
+import TipTapEditor from './TextEditor/TipTapEditor'
 
 createRoot(document.getElementById('root')).render(
     <>
-    <ExtrnalModal/>
+    <TipTapEditor/>
     </> 
 )

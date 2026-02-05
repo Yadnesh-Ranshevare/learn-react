@@ -17,6 +17,7 @@
 3. [Tanstack Query](./vite-project/src/TanStackQuery/readme.md)
 4. [Zod](./vite-project/src/Zod/readme.md)
 5. [React 3 Fiber](./vite-project/src/ReactThreeFiber/Readme.md)
+6. [TipTap Text Editor](./vite-project/src/TextEditor/readme.md)
 
 
 # Some of my Favorite React Libraries
